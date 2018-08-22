@@ -6,7 +6,7 @@ contract("Election", function(accounts) {
     return election
       .deployed()
       .then(function(instance) {
-        return instance.candidateCount();
+        return instance.candidatesCount();
       })
       .then(function(count) {
         assert.equal(count, 2);
@@ -32,6 +32,29 @@ contract("Election", function(accounts) {
         assert.equal(candidate[0], 2, "contains the correct candidate id");
         assert.equal(candidate[1], "Candidate 2", "contains the correct name");
         assert.equal(candidate[2], 0, "contains the correct vote count");
+      });
+  });
+
+  // Allow a voter to cast a vote
+
+  it("allow a voter to cast a vote", function() {
+    return election
+      .deployed()
+      .then(function(i) {
+        electionInstance = i;
+        candidateId = 1;
+        return electionInstance.vote(candidateId, { from: accounts[0] });
+      })
+      .then(function(reciept) {
+        return electionInstance.voters(accounts[0]);
+      })
+      .then(function(voted) {
+        assert(voted, "the voter is marked as voted");
+        return electionInstance.candidates(candidateId);
+      })
+      .then(function(candidate) {
+        var voteCount = candidate[2];
+        assert.equal(voteCount, 1, "Increment the candidate's vote count");
       });
   });
 });
